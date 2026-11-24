@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kopacz v3 — Cryptographic Adaptive DNS Transport &amp; Multi-App Relay</title>
+<style>
+:root {
+  --bg: #090a0f;
+  --panel: #11131c;
+  --panel-alt: #161926;
+  --border: #23283b;
+  --text: #e6e8f0;
+  --muted: #949bb0;
+  --accent: #38bdf8;
+  --accent-2: #34d399;
+  --warn: #fbbf24;
+  --code-bg: #0d0f17;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  padding-bottom: 4rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.container { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
+header {
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(circle at 50% 0%, #172036 0%, var(--bg) 70%);
+  padding: 3.5rem 0 2.75rem;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+.badge {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-2);
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+h1 { font-size: 2.5rem; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+.subtitle { color: var(--muted); font-size: 1.1rem; max-width: 680px; margin-bottom: 1.4rem; }
+.nav-pills { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.nav-pill {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.nav-pill:hover { border-color: var(--accent); text-decoration: none; }
+.hero-img {
+  width: 210px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+section { margin-top: 3rem; }
+h2 {
+  font-size: 1.45rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border);
+  color: #fff;
+}
+h3 { font-size: 1.08rem; margin: 1.25rem 0 0.5rem; color: var(--accent); }
+p { margin-bottom: 0.85rem; color: var(--text); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1.1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; }
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+.card h3 { margin-top: 0; }
+.card p { color: var(--muted); font-size: 0.94rem; margin-bottom: 0; }
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #d1d5db;
+  margin: 0.75rem 0 1.25rem;
+}
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  background: var(--panel-alt);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+pre code { background: none; padding: 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  font-size: 0.92rem;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+}
+th { background: var(--panel-alt); color: #fff; font-weight: 600; }
+td { background: var(--panel); color: var(--muted); }
+td strong { color: var(--text); }
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.88rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container hero-grid">
+    <div>
+      <span class="badge">RFC-KOPACZ-V3 · Version 3.0</span>
+      <h1>Kopacz v3</h1>
+      <p class="subtitle">
+        A cryptographically authenticated, adaptive DNS transport protocol and multi-application Tor relay for bidirectional communication over constrained or censored networks.
+      </p>
+      <div class="nav-pills">
+        <a class="nav-pill" href="#architecture">5-Layer Architecture</a>
+        <a class="nav-pill" href="#postures">Adaptive Postures</a>
+        <a class="nav-pill" href="#clients">Multi-Platform Clients</a>
+        <a class="nav-pill" href="#security">Security &amp; Verification</a>
+        <a class="nav-pill" href="RFC-KOPACZ-V3.md">Read RFC-KOPACZ-V3.md</a>
+        <a class="nav-pill" href="DESIGN.md">Read DESIGN.md</a>
+        <a class="nav-pill" href="https://github.com/risk-strategy/kopacz">GitHub Repository</a>
+      </div>
+    </div>
+    <img class="hero-img" src="imgs/kopacz.png" alt="Kopacz Logo">
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="overview">
+    <h2>Why Kopacz v3?</h2>
+    <p>
+      Traditional DNS tunnels suffer from two fatal flaws: <strong>per-fragment encryption overhead</strong> (which wastes up to 82% of each DNS query on nonces and MAC tags) and <strong>stop-and-wait polling stalls</strong> across recursive resolvers.
+    </p>
+    <p>
+      Kopacz v3 decouples cryptographic framing from DNS fragmentation: application messages are compressed with <strong>LZ4</strong> and sealed once with <strong>ChaCha20-Poly1305</strong> (a flat 28-byte overhead per message), then sliced into order-independent fragments carried over self-clocked DNS query pipelines.
+    </p>
+  </section>
+
+  <section id="architecture">
+    <h2>5-Layer Protocol Architecture</h2>
+<pre><code>+-----------------------------------------------------------------------------------+
+| Layer 5: Multiplexed Applications (1-Byte App ID)                                 |
+|   0x01 CONNECT Proxy   | 0x02 TCP/SSH Bridge | 0x03 E2E Dead-Drop | 0x04 WebFetch |
++-----------------------------------------------------------------------------------+
+| Layer 4: Session State Machine, Selective Repeat ARQ &amp; Conditional LZ4            |
+|   64-Packet RecvWindow | Piggybacked ACK_LOW8 | Self-Clocked Poll Pipeline        |
++-----------------------------------------------------------------------------------+
+| Layer 3: Cryptographic Engine                                                     |
+|   1-RTT X25519 ECDH + PSK (UTC Timestamp + Transcript AAD)                        |
+|   ChaCha20-Poly1305 AEAD (28B/msg) + 64-Packet Sliding Anti-Replay Bitmap         |
++-----------------------------------------------------------------------------------+
+| Layer 2: Framing &amp; Fragmentation                                                  |
+|   8-Byte Big-Endian Header + 8-Byte AEAD Control MAC (on ACK / POLL / FIN)        |
++-----------------------------------------------------------------------------------+
+| Layer 1: Adaptive DNS Carrier                                                     |
+|   Upstream QNAME (Base32 / Base36) | Downstream TXT or Synthesized AAAA (2000::/3)|
++-----------------------------------------------------------------------------------+</code></pre>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>8-Byte Wire Header + Control MAC</h3>
+        <p>
+          Every packet begins with a compact 8-byte big-endian header: <code>Flags(1) ‖ StreamID(2) ‖ Sequence(2) ‖ FragIndex(1) ‖ TotalFrags(1) ‖ Reserved(1)</code>. Standalone control frames (<code>ACK</code>, <code>POLL</code>, <code>FIN</code>) append an 8-byte AEAD control MAC so spoofed UDP packets can never reset a session or drain downstream queues.
+        </p>
+      </div>
+      <div class="card">
+        <h3>1-RTT Forward-Secret Handshake</h3>
+        <p>
+          Clients generate an ephemeral X25519 keypair and seal <code>c_pub ‖ utc_timestamp(8B)</code> under the 256-bit PSK with AAD <code>"kopacz-v3-syn"</code>. The relay verifies timestamp freshness (&plusmn;300s), rejects replayed SYN nonces, and replies with <code>s_pub</code> bound to <code>"kopacz-v3-synack:" ‖ c_pub</code>. Directional keys are derived via <code>HKDF-SHA256</code>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="postures">
+    <h2>Bimodal Threat Model &amp; Transport Postures</h2>
+    <p>
+      A traveler bypassing a captive Wi-Fi portal and a human rights defender operating inside a censored network face fundamentally different adversaries. Kopacz v3 adapts its wire footprint via three transport postures:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Posture</th>
+          <th>DNS QTYPE</th>
+          <th>Max Label</th>
+          <th>Up / Down MTU</th>
+          <th>Concurrency</th>
+          <th>Pacing Jitter</th>
+          <th>Target Environment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong><code>turbo</code></strong></td>
+          <td><code>TXT</code></td>
+          <td>63 chars</td>
+          <td>120 B / 480 B</td>
+          <td>4&times; pipelined</td>
+          <td>0 ms</td>
+          <td>Captive portals &amp; high-throughput bulk transfer</td>
+        </tr>
+        <tr>
+          <td><strong><code>balanced</code></strong></td>
+          <td><code>TXT</code></td>
+          <td>50 chars</td>
+          <td>100 B / 240 B</td>
+          <td>2&times; pipelined</td>
+          <td>5–25 ms</td>
+          <td>Default general-purpose operation across public resolvers</td>
+        </tr>
+        <tr>
+          <td><strong><code>covert</code></strong></td>
+          <td><code>AAAA</code></td>
+          <td>32 chars</td>
+          <td>56 B / 112 B</td>
+          <td>1&times; serial</td>
+          <td>150–600 ms</td>
+          <td>High-DPI censored networks (encodes downstream in <code>2000::/3</code> IPv6 records)</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="clients">
+    <h2>Multi-Platform Clients</h2>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Python CLI &amp; <code>.pyz</code></h3>
+        <p>
+          Unified <code>kopacz-client</code> supporting <code>socks</code>, <code>ssh</code>, <code>fetch</code>, and <code>chat</code>. Package into a single executable <code>kopacz.pyz</code> with <code>./scripts/build_pyz.sh</code>.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Zero-Dependency C99</h3>
+        <p>
+          <code>clients/c/kopacz.c</code> compiles with any C99 compiler into a ~35 KB static-friendly binary with embedded X25519, ChaCha20-Poly1305, HKDF-SHA256, LZ4, and raw UDP/53 DNS.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Bash &amp; PowerShell</h3>
+        <p>
+          Drop-in wrapper scripts in <code>clients/bash/kopacz.sh</code> and <code>clients/powershell/kopacz.ps1</code> for POSIX workstations and Windows PowerShell 5.1+/7+.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Single-File DoH Browser</h3>
+        <p>
+          Open <code>kopacz/apps/clients/web.html</code> directly from disk. Uses DNS-over-HTTPS with sticky provider failover and Relay Reader Mode DOM distillation.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Relay Reader Mode (<code>0x04</code>)</h3>
+        <p>
+          <code>FETCH_READER</code> distills bloated multi-megabyte webpages on the relay into a clean, self-contained HTML+CSS bundle delivered in a single compressed burst.
+        </p>
+      </div>
+      <div class="card">
+        <h3>E2E Dead-Drop Chat (<code>0x03</code>)</h3>
+        <p>
+          End-to-end X25519 + ChaCha20-Poly1305 messaging where handles are cryptographically pinned to owner public keys on both the relay and client.
+        </p>
+      </div>
+    </div>
+
+    <h3>Client Quickstart Examples</h3>
+<pre><code>export KOPACZ_DOMAIN="t.example.com"
+export KOPACZ_PSK="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+
+# 1. Fetch a webpage using Relay Reader Mode (distilled HTML)
+kopacz-client fetch https://www.bbc.co.uk --reader
+
+# 2. Start a local SOCKS5 proxy on 127.0.0.1:1080 in TURBO posture
+kopacz-client socks --bind 127.0.0.1:1080 --posture turbo
+
+# 3. SSH over DNS via ProxyCommand
+ssh -o ProxyCommand="kopacz-client ssh --tag bridge" user@target
+
+# 4. Build and run the zero-dependency C99 client
+cc -O2 -Wall -Wextra -std=c99 -o kopacz clients/c/kopacz.c
+./kopacz -d "$KOPACZ_DOMAIN" -k "$KOPACZ_PSK" fetch https://example.com</code></pre>
+  </section>
+
+  <section id="security">
+    <h2>Security Hardening &amp; Verification</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Defense-in-Depth Relay Isolation</h3>
+        <p>
+          All relay HTTP/TCP egress routes through Tor SOCKS5 with a kernel-level <code>iptables -I OUTPUT 1 -m owner --uid-owner kopacz</code> kill-switch, strict DNS resolution SSRF guards blocking RFC 1918/6598/loopback/link-local ranges on every redirect hop, and stripped non-HTTP URL handlers.
+        </p>
+      </div>
+      <div class="card">
+        <h3>293 Automated Tests</h3>
+        <p>
+          Verified by 293 unit, Hypothesis property-based fuzzing, RFC conformance (<code>tests/test_rfc_conformance.py</code>), and security audit regression tests (<code>tests/test_security_audit.py</code>) covering control-plane MACs, fragment poisoning, window bounds, and handle ownership.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="container">
+  <div>Kopacz v3 · Risk Strategy (<a href="https://github.com/risk-strategy/kopacz">github.com/risk-strategy/kopacz</a>)</div>
+  <div>
+    <a href="RFC-KOPACZ-V3.md">RFC Specification</a> ·
+    <a href="DESIGN.md">Design Notes</a>
+  </div>
+</footer>
+
+</body>
+</html>

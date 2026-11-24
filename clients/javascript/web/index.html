@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kopacz Web</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#e0e0e0;height:100vh;display:flex;flex-direction:column}
+#config-panel{background:#111;border-bottom:1px solid #333;padding:8px 12px;font-size:13px}
+#config-panel.collapsed .config-body{display:none}
+.config-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.config-header h3{font-size:13px;color:#888;letter-spacing:1px;text-transform:uppercase}
+.config-toggle{color:#666;font-size:16px}
+.config-body{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.config-body label{color:#888;font-size:12px}
+.config-body input{background:#1a1a1a;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:3px;font-family:monospace;font-size:12px;width:100%}
+.config-body input:focus{border-color:#4a9eff;outline:none}
+.doh-row{grid-column:1/-1;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.doh-row label{margin-right:4px}
+.doh-btn{background:#1a1a1a;border:1px solid #333;color:#888;padding:3px 10px;border-radius:3px;cursor:pointer;font-size:12px}
+.doh-btn.active{border-color:#4a9eff;color:#4a9eff}
+.doh-btn:hover{border-color:#555}
+#nav-bar{background:#151515;border-bottom:1px solid #333;display:flex;align-items:center;padding:6px 12px;gap:8px}
+#lock-icon{font-size:14px;color:#666;width:20px;text-align:center}
+#url-input{flex:1;background:#1a1a1a;border:1px solid #333;color:#e0e0e0;padding:6px 10px;border-radius:3px;font-size:14px;font-family:system-ui}
+#url-input:focus{border-color:#4a9eff;outline:none}
+#mode-toggle-btn,#img-toggle-btn{background:#1a1a1a;border:1px solid #333;color:#888;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
+#mode-toggle-btn.active,#img-toggle-btn.active{border-color:#4caf50;color:#4caf50}
+#mode-toggle-btn:hover,#img-toggle-btn:hover{border-color:#555}
+#go-btn{background:#1a1a1a;border:1px solid #333;color:#e0e0e0;padding:6px 16px;border-radius:3px;cursor:pointer;font-size:13px;font-weight:600}
+#go-btn:hover{border-color:#4a9eff;color:#4a9eff}
+button:disabled{opacity:.4;cursor:not-allowed}
+#viewport{flex:1;background:#fff;position:relative}
+#viewport iframe{width:100%;height:100%;border:none}
+#loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#333;font-size:14px;display:none}
+#status-bar{background:#111;border-top:1px solid #333;padding:4px 12px;font-size:12px;color:#666;display:flex;gap:16px}
+.status-item{display:flex;gap:4px}
+.status-label{color:#555}
+.status-value{color:#888}
+.status-value.connected{color:#4caf50}
+.status-value.error{color:#f44336}
+#log-panel{background:#0d0d0d;border-top:1px solid #222;max-height:120px;overflow-y:auto;font-family:monospace;font-size:11px;padding:4px 8px;display:none}
+#log-panel.visible{display:block}
+.log-line{color:#555;line-height:1.6}
+.log-line.error{color:#f44336}
+.log-line.info{color:#4a9eff}
+</style>
+</head>
+<body>
+
+<div id="config-panel">
+  <div class="config-header" onclick="toggleConfig()">
+    <h3>Config</h3>
+    <span class="config-toggle" id="config-arrow">&#9660;</span>
+  </div>
+  <div class="config-body">
+    <div><label>Domain</label><input id="cfg-domain" value="t.example.com" placeholder="tunnel.example.com"></div>
+    <div><label>Server Public Key (hex)</label><input id="cfg-psk" value="" placeholder="64 hex chars" type="password"></div>
+    <div class="doh-row">
+      <label>DoH:</label>
+      <button class="doh-btn active" data-provider="cloudflare">Cloudflare</button>
+      <button class="doh-btn" data-provider="google">Google</button>
+      <button class="doh-btn" data-provider="quad9">Quad9</button>
+      <button class="doh-btn" data-provider="custom">Custom</button>
+      <input id="cfg-doh-custom" placeholder="https://custom-doh/dns-query" style="flex:1;display:none">
+    </div>
+  </div>
+</div>
+
+<div id="nav-bar">
+  <button id="back-btn" onclick="goBack()" title="Back" disabled style="background:#1a1a1a;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:3px;cursor:pointer;font-size:14px">&larr;</button>
+  <button id="fwd-btn" onclick="goForward()" title="Forward" disabled style="background:#1a1a1a;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:3px;cursor:pointer;font-size:14px">&rarr;</button>
+  <span id="lock-icon">&#128274;</span>
+  <input id="url-input" type="text" placeholder="Enter URL..." autofocus>
+  <button id="mode-toggle-btn" class="active" onclick="toggleReaderMode()" title="Reader Mode distills HTML on the relay into a single fast response">Mode: Reader</button>
+  <button id="img-toggle-btn" onclick="toggleImages()" title="Toggle loading images over DNS tunnel (Full mode)">Images: OFF</button>
+  <button id="go-btn" onclick="navigate()">GO</button>
+</div>
+
+<div id="viewport">
+  <iframe id="page-frame" sandbox="allow-scripts allow-forms"></iframe>
+  <div id="loading">Connecting...</div>
+</div>
+
+<div id="status-bar">
+  <div class="status-item"><span class="status-label">Status:</span> <span class="status-value" id="st-conn">Disconnected</span></div>
+  <div class="status-item"><span class="status-label">Queries:</span> <span class="status-value" id="st-queries">0</span></div>
+  <div class="status-item"><span class="status-label">Provider:</span> <span class="status-value" id="st-provider">Cloudflare</span></div>
+  <div class="status-item" style="margin-left:auto;cursor:pointer" onclick="toggleLog()"><span class="status-label">Log</span></div>
+</div>
+
+<div id="log-panel"></div>
+
+<script src="../kopacz.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

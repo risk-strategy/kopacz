@@ -1,0 +1,84 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyz
+clients/c/kopacz
+clients/c/kopacz.exe
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# PyInstaller / Nuitka
+*.spec
+*.build/
+*.dist/
+*.onefile-build/
+
+# Test / coverage / property-testing caches
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+.hypothesis/
+
+# Type checkers & linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+
+# IDEs & Agent state
+.vscode/
+.idea/
+.claude/
+.gemini/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ad-hoc local debug scripts
+test_bbc.py
+test_browser*.py
+
+# Logs, runtime, & secrets
+*.log
+*.pid
+psk.txt
+*.pem
+*.key
+*.crt
+.env
+.env.*
+relay.toml
+config.yaml
+*.secret
